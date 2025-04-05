@@ -2,26 +2,41 @@ import yfinance as yf
 from kafka import KafkaProducer
 import json
 import time
+import requests
 
-# Configures the kafka server 
+# Function to fetch the exchange rate
+def exchange_rate(base="USD", target="CAD"):
+    """Fetch exchange rate from ExchangeRate-API"""
+    response = requests.get(f"https://api.exchangerate-api.com/v4/latest/{base}")
+    data = response.json()
+    return data["rates"].get(target, 1.0)  # Default to 1 if no rate is found
+
+# Configures the Kafka producer
 producer = KafkaProducer(
     bootstrap_servers='localhost:9092',  
     value_serializer=lambda x: json.dumps(x).encode('utf-8')  
 )
 
-def fetch_and_send_data(ticker):
+def fetch_and_send_data(ticker, currency_value="USD"):
     """Fetch stock data and send it to Kafka topic"""
     while True:
         stock = yf.Ticker(ticker)
         data = stock.history(period="1d", interval="1m").tail(1)  
 
-        # Extracts the infromation from Yahoo Finance
+        # Extract information from Yahoo Finance
         if not data.empty:
             latest = data.iloc[-1]
+            price_usd = float(latest['Close'])
+
+            # Fetch the exchange rate from USD (or other base) to the desired currency
+            rate = exchange_rate(base=currency_value, target="CAD")
+            price_converted = price_usd * rate
+
             message = {
                 "ticker": ticker,
                 "time": str(latest.name),  
-                "price": float(latest['Close']),  
+                "price_usd": price_usd, 
+                "price_converted": price_converted,  
                 "volume": int(latest['Volume'])  
             }
 
@@ -31,5 +46,6 @@ def fetch_and_send_data(ticker):
         time.sleep(1)
 
 if __name__ == "__main__":
-    ticker_input = input("Enter the stock ticker (e.g., AAPL, TSLA): ").upper()
-    fetch_and_send_data(ticker_input)  
+    ticker_input = input("Enter the stock ticker: ").upper()
+    currency_value = input("Enter the currency you want to exchange from: ").upper()
+    fetch_and_send_data(ticker_input, currency_value)
