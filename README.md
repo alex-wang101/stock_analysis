@@ -1,6 +1,6 @@
 # Want to stay updated with the exchange rate and a specific stock? #
 
-This project streams real-time stock data, processes it using Apache Kafka and Apache Spark, and displays the processed data in real time. It includes integration with the Yahoo Finance API to fetch stock data and ExchangeRate-API to convert prices to the desired currency.
+This project streams real-time stock data, processes it using **Apache Kafka and Apache Spark**, and displays the processed data in real time. It includes integration with the **Yahoo Finance API** to fetch stock data and ExchangeRate-API to convert prices to the desired currency.
 
 Customize the stock and currency you want to analyze 
 
