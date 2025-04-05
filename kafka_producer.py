@@ -9,7 +9,7 @@ def exchange_rate(base="USD", target="CAD"):
     """Fetch exchange rate from ExchangeRate-API"""
     response = requests.get(f"https://api.exchangerate-api.com/v4/latest/{base}")
     data = response.json()
-    return data["rates"].get(target, 1.0)  # Default to 1 if no rate is found
+    return data["rates"].get(target, 1.0)  
 
 # Configures the Kafka producer
 producer = KafkaProducer(
@@ -35,17 +35,25 @@ def fetch_and_send_data(ticker, currency_value="USD"):
             message = {
                 "ticker": ticker,
                 "time": str(latest.name),  
-                "price_usd": price_usd, 
+                "price_usd": price_usd,  
                 "price_converted": price_converted,  
                 "volume": int(latest['Volume'])  
             }
 
             producer.send("stock-stream", value=message)
-            print(f"Sent to Kafka: {message}")
 
-        time.sleep(1)
+            # Print each element in the message with explanations
+            print(f"Ticker: {message['ticker']}")
+            print(f"Time: {message['time']}")
+            print(f"Price in USD: {message['price_usd']}")
+            print(f"Price in {currency_value}: {message['price_converted']}")
+            print(f"Volume: {message['volume']}")
+            print(f"Currency exchange rate from {currency_value} to CAD: {rate}")
+            print("-" * 50)
+
+        time.sleep(1)  
 
 if __name__ == "__main__":
-    ticker_input = input("Enter the stock ticker: ").upper()
-    currency_value = input("Enter the currency you want to exchange from: ").upper()
+    ticker_input = input("Enter the stock ticker (e.g., AAPL, TSLA): ").upper()
+    currency_value = input("Enter the currency you want to exchange from (e.g., USD): ").upper()
     fetch_and_send_data(ticker_input, currency_value)
