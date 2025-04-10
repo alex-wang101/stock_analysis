@@ -29,8 +29,8 @@ def fetch_and_send_data(ticker, currency_value="USD"):
             price_usd = float(latest['Close'])
 
             # Fetch the exchange rate from USD (or other base) to the desired currency
-            rate = exchange_rate(base=currency_value, target="CAD")
-            price_converted = price_usd * rate
+            rate = exchange_rate(base=currency_value, target="USD")
+            price_converted = price_usd / rate
 
             message = {
                 "ticker": ticker,
@@ -45,13 +45,13 @@ def fetch_and_send_data(ticker, currency_value="USD"):
             # Print each element in the message with explanations
             print(f"Ticker: {message['ticker']}")
             print(f"Time: {message['time']}")
-            print(f"Price in USD: {message['price_usd']}")
             print(f"Price in {currency_value}: {message['price_converted']}")
+            print(f"Price in USD: {message['price_usd']}")
             print(f"Volume: {message['volume']}")
-            print(f"Currency exchange rate from {currency_value} to CAD: {rate}")
+            print(f"Currency exchange rate from USD to {currency_value}: {rate}")
             print("-" * 50)
 
-        time.sleep(1)  
+        time.sleep(5)  
 
 if __name__ == "__main__":
     ticker_input = input("Enter the stock ticker (e.g., AAPL, TSLA): ").upper()
